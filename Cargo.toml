@@ -1,0 +1,14 @@
+[package]
+name = "rb_instructive"
+version = "0.1.0"
+edition = "2021"
+authors = ["Ifaz Kabir <ifazk@noreply.github.com>"]
+description = "Red-Black Trees where child nodes remember which child they are"
+keywords = ["red-black", "tree", "bst"]
+readme = "README.md"
+license = "MIT"
+rust-version = "1.75"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
