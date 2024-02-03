@@ -149,13 +149,11 @@ impl<K: Ord + Copy, T: Clone> RBTree<K, T> {
             }
             Some(n) => {
                 let current_key = n.borrow().key;
-                let inserted_node: BareTree<_, _>;
                 let insert_side = self.insert_side(current_key, key);
 
                 // Insert into insert_side
                 let old_child_subtree = n.borrow_mut().take_child(insert_side);
-                let (new_child_subtree, new_node) = self.add_r(old_child_subtree, key, value);
-                inserted_node = new_node;
+                let (new_child_subtree, inserted_node) = self.add_r(old_child_subtree, key, value);
 
                 new_child_subtree
                     .borrow_mut()
@@ -168,11 +166,12 @@ impl<K: Ord + Copy, T: Clone> RBTree<K, T> {
     }
 
     // should only be called nodes where the parent is red, i.e. grand parent exists
-    fn uncle(&self, node: BareTree<K, T>) -> (RBSide, Tree<K, T>) {
-        let parent = node.borrow().parent.as_ref().unwrap().clone();
+    fn uncle(&self, node: &BareTree<K, T>) -> (RBSide, Tree<K, T>) {
+        let node_ref = node.borrow(); 
+        let parent = node_ref.parent.as_ref().unwrap();
         let parent = parent.borrow();
         let other_side = parent.child_of_parent.unwrap().other();
-        let grand_parent = parent.parent.as_ref().unwrap().clone();
+        let grand_parent = parent.parent.as_ref().unwrap();
         let uncle = grand_parent.borrow().get_child(other_side);
         (other_side, uncle)
     }
@@ -249,7 +248,7 @@ impl<K: Ord + Copy, T: Clone> RBTree<K, T> {
             // n is red
             while parent_is_red && not_root {
                 // parent_is_red implies grand_parent exists and is black
-                let (uncle_side, uncle) = self.uncle(n.clone());
+                let (uncle_side, uncle) = self.uncle(&n);
                 let mut parent = n.borrow().parent.as_ref().unwrap().clone();
                 if uncle.is_some() && uncle.as_ref().unwrap().borrow().color == Color::Red {
                     // uncle red
