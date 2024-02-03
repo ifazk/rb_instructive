@@ -178,9 +178,10 @@ impl<K: Ord + Copy, T: Clone> RBTree<K, T> {
 
     // only called on non-root (red) nodes, so parent can be unwrapped
     fn parent_color(&self, node: &BareTree<K, T>) -> Color {
-        let parent = RefCell::borrow(&node).parent.as_ref().unwrap().clone();
-        let parent = RefCell::borrow(&parent);
-        parent.color
+        let node_ref = node.borrow();
+        let parent = node_ref.parent.as_ref().unwrap();
+        let parent_ref = parent.borrow();
+        parent_ref.color
     }
 
     // must have non-nil child at child_side
