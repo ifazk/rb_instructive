@@ -92,6 +92,33 @@ pub struct RBTree<K: Ord, T> {
     pub length: usize,
 }
 
+impl<K: Ord, T> Drop for RBTree<K, T> {
+    fn drop(&mut self) {
+        fn nullify_parent<K: Ord,T>(x: Tree<K, T>) {
+            if let Some(r) = x {
+                r.borrow_mut().parent = None;
+            }
+        }
+        self.walk(nullify_parent);
+    }
+}
+
+impl<K: Ord, T> RBTree<K, T> {
+    pub fn walk(&self, f: impl Fn(Tree<K,T>) -> ()) {
+        self.in_order(&self.root, &f)
+    }
+
+    fn in_order(&self, node: &Tree<K,T>, f: &impl Fn(Tree<K,T>) -> ()) {
+        if let Some(r) = node.as_ref() {
+            self.in_order(&r.borrow().left, f);
+        }
+        f(node.clone());
+        if let Some(r) = node.as_ref() {
+            self.in_order(&r.borrow().right, f);
+        }
+    }
+}
+
 impl<K: Ord + Copy, T: Clone> RBTree<K, T> {
     pub fn new() -> RBTree<K, T> {
         RBTree {
@@ -167,7 +194,7 @@ impl<K: Ord + Copy, T: Clone> RBTree<K, T> {
 
     // should only be called nodes where the parent is red, i.e. grand parent exists
     fn uncle(&self, node: &BareTree<K, T>) -> (RBSide, Tree<K, T>) {
-        let node_ref = node.borrow(); 
+        let node_ref = node.borrow();
         let parent = node_ref.parent.as_ref().unwrap();
         let parent = parent.borrow();
         let other_side = parent.child_of_parent.unwrap().other();
@@ -330,7 +357,8 @@ mod tests {
         orig_root
             .borrow_mut()
             .set_child(RBSide::Left, Some(left.clone()));
-        left.borrow_mut().set_parent(RBSide::Left, orig_root.clone());
+        left.borrow_mut()
+            .set_parent(RBSide::Left, orig_root.clone());
 
         orig_root
             .borrow_mut()
